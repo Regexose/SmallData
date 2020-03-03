@@ -79,6 +79,19 @@ elif args.app == 'interpreter':
 elif args.app == 'osculator':
     from mocks import beat_mock
     beat_mock.run_mock()
+elif args.app == 'trainer':
+    from webserver.classification import trainer
+    import pandas as pd
+    data_path = 'webserver/model_data'
+
+    regexes = trainer.load_regexes(os.path.join(data_path, 'TrainingData_regex.xlsx'))
+    df_ml = pd.read_excel(os.path.join(data_path, 'TrainingData_ml.xlsx')).rename(columns={'Effekt': 'category'})
+    sentences, categories = trainer.read_trainingdata_utterances(df_ml)
+    x, y = trainer.vectorize_corpus(sentences, categories=categories)
+    clf = trainer.train_clf(x, y)
+
+    joblib.dump(regexes, os.path.join(data_path, 'regex_mapping.pkl'))
+    joblib.dump(clf, os.path.join(data_path, 'sgd_clf.pkl'))
 
 else:
     raise Exception('Unknown command: {}. Please see run.py for options'.format(args.app))

@@ -5,7 +5,7 @@ import gensim
 import joblib
 import numpy as np
 from collections import defaultdict
-from . import trainer
+from webserver.classification import preprocessing
 
 
 class Classifier:
@@ -89,7 +89,7 @@ class Classifier:
     def predict_proba(self, sentence, filter_stop_words=True, verbose=False):
         self.verbose = verbose
         self.filter_stop_words = filter_stop_words
-        sentence = trainer.clean_string(sentence)
+        sentence = preprocessing.clean_string(sentence)
         regex_pred = self.check_sent_with_regex(sentence)
 
         if regex_pred is not None:

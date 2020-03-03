@@ -1,16 +1,10 @@
-'''
+"""
 creates two pickle files.
 1) single word vector classifier
 2) regex mapping.
 
 
-'''
-import os
-import spacy
-import joblib
-import gensim
-import gensim.parsing.preprocessing as gsp
-
+"""
 import numpy as np
 import pandas as pd
 
@@ -22,64 +16,14 @@ from sklearn.model_selection import cross_val_score
 
 import warnings
 
+from webserver.classification.preprocessing import clean_string, sentence_to_vec, word_to_vec
+
 warnings.filterwarnings("ignore")
 
-nlp = spacy.load('de')
 
-
-def load_model():
-    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return gensim.models.KeyedVectors.load_word2vec_format(
-        os.path.join(parent_dir, 'model_data/german.model'), binary=True)
-
-
-model = load_model()
-
-
-def replace_umnlaut(text):
-    text = text.replace('ä', 'ae')
-    text = text.replace('ö', 'oe')
-    text = text.replace('ü', 'ue')
-    text = text.replace('ß', 'ss')
-    return text
-
-
-def clean_string(text):
-    filters = [replace_umnlaut,
-               gsp.strip_tags,
-               gsp.strip_multiple_whitespaces,
-               gsp.strip_numeric]
-
-    text = text.lower()
-    for f in filters:
-        text = f(text)
-    return text.strip()
-
-
-def sentence_to_vec_spacy(sentence):
-    data_matrix = np.array([word.vector for word in nlp(sentence)])
-    return np.mean(data_matrix, axis=0)
-
-
-def sentence_to_vec_german_model(sentence):
-    """
-    Warning: return nan, if none of the words in the sentence are known to the model!
-    :param sentence:
-    :return:
-    """
-    data_matrix = []
-    for word in sentence.split(' '):
-        if word in model.index2word:
-            data_matrix.append(model.word_vec(word))
-        elif word.capitalize() in model.index2word:
-            data_matrix.append(model.word_vec(word.capitalize()))
-    return np.mean(np.asarray(data_matrix), axis=0)
-
-
-def vectorize_corpus(texts, vectorizer, categories=None):
+def vectorize_corpus(texts, categories=None):
     """
     :param texts: a list of texts
-    :param vectorizer: the vectorizing callable
     :param categories: an optional list of categories. If provided, a new list of categories is returned,
                         with the cats of the texts removed that have not been vectorized
     :return: an array of vectors. WARNING: if a text cannot be vectorized, it is removed from the corpus!
@@ -90,8 +34,8 @@ def vectorize_corpus(texts, vectorizer, categories=None):
     vectors = []
     return_cats = []
     for idx, text in enumerate(texts):
-        vect = vectorizer(text)
-        if isinstance(vect, np.ndarray):
+        vect = sentence_to_vec(text)
+        if vect is not None:
             vectors.append(vect)
             if categories is not None:
                 return_cats.append(categories[idx])
@@ -103,7 +47,7 @@ def vectorize_corpus(texts, vectorizer, categories=None):
 
 
 def read_trainingdata_textfiles(trainingdata_path):
-    '''
+    """
     Reads all trainingdata texfiles in a directory. The textfiles can contain single words and regular expressions.
     Every line containing more than one word ist considered a regular expression
     lines starting with "[" are ignored.
@@ -122,7 +66,7 @@ def read_trainingdata_textfiles(trainingdata_path):
                                           One with regexes as keys and categories as values
 
     all umlauts are replaced and words are lowercases.
-    '''
+    """
     keywords_to_cat = defaultdict(list)
     regexes = {}
 
@@ -162,16 +106,16 @@ def read_trainingdata_utterances(df, min_wc=1, max_wc=np.Inf):
 
 
 def transform_keywords_to_trainingdata(keywords_to_cat):
-    '''
+    """
     Transforms a dictionary mapping keywords to categories into two lists that can be used
     to train sklearn SGDClassifier objects. Words are transformed into Word2Vec Vectors using
     a gensim model trained on the german Wikipedia
-    '''
+    """
     x, y = [], []
     # print('139 keywords2cat: ', keywords_to_cat)
 
     for word, category in keywords_to_cat.items():
-        vect = word_to_vect(word)
+        vect = word_to_vec(word)
         if vect is not None:
             x.append(vect)
             y.append(category)
@@ -204,19 +148,3 @@ def load_regexes(file_path):
     df = pd.read_excel(file_path)
     expressions = map(clean_string, df.utterance)
     return dict(zip(expressions, df.Effekt))
-
-
-if __name__ == '__main__':
-    data_path = '../model_data'
-
-    regexes = load_regexes(os.path.join(data_path, 'TrainingData_regex.xlsx'))
-
-    df_ml = pd.read_excel(os.path.join(data_path, 'TrainingData_ml.xlsx')).rename(columns={'Effekt': 'category'})
-
-    sentences, categories = read_trainingdata_utterances(df_ml)
-
-    x, y = vectorize_corpus(sentences, sentence_to_vec_german_model, categories=categories)
-    clf = train_clf(x, y)
-
-    joblib.dump(regexes, os.path.join(data_path, 'regex_mapping.pkl'))
-    joblib.dump(clf, os.path.join(data_path, 'sgd_clf.pkl'))
