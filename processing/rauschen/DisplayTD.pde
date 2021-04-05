@@ -26,23 +26,29 @@ class DisplayTD {
   }
 
   void draw() {
+
     mainSurf.s.beginDraw();
     mainSurf.s.textFont(this.font);
     mainSurf.s.fill(this.shapeColor, int(random(0, 80)));
-    mainSurf.s.pushMatrix();
     mainSurf.s.translate(this.x, this.y);
     mainSurf.s.rotate(this.angle);
     if (this.isShape) {
+      float noiseX = noise(sX);
+      float noiseY = noise(sY);
+      mainSurf.s.pushMatrix();
+      mainSurf.s.translate(noiseX, noiseY);
       this.shape.disableStyle();
       mainSurf.s.fill(shapeColor);
       mainSurf.s.shape(this.shape, 0, 0, this.shapeSize, this.shapeSize);
+      mainSurf.s.popMatrix();
+      sX += 0.01;
+      sY += 0.01;
     } else if (!this.isShape) {
       mainSurf.s.textAlign(CENTER, CENTER);
       mainSurf.s.textSize(random(40));
       mainSurf.s.text(this.utt, 0, 0);
     }
     moveText();
-    mainSurf.s.popMatrix();
     mainSurf.s.endDraw();
   }
 
@@ -55,6 +61,8 @@ class DisplayTD {
         float aH = area.getHeight();
         this.x = random(center.x - aW/3, center.x + aW/3);
         this.y = random(center.y - aH/3, center.y + aH/3);
+        sX = this.x;
+        sY = this.y;
         // println("   cat   " + this.cat + " x  " + this.x + "   y  " + this.y);
       }
     }
