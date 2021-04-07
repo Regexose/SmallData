@@ -11,7 +11,7 @@ OscP5 oscP5;
 NetAddress loc;
 
 final Timer t = new Timer();
-ArrayList<DisplayTD> utts = new ArrayList<DisplayTD>(); // list with all the Text Objects
+ArrayList<DisplayTD> utts = new ArrayList<DisplayTD>(); // list with all the TrainingData Objects
 Surface mainSurf, incSurf, matchSurf, titleSurf1, dupSurf1, dupSurf2, titleSurf2, infoSurf, counterSurf;
 Surface[] surfs;
 DisplayTD incomingUtt;
@@ -34,9 +34,12 @@ StringDict shapeMapping = new StringDict(); // mapping to attribute categories t
 int maxUtts = 1;
 float prgIncrement;
 int uttCount = 0; 
+int startU, endU; // indices für das Hintergrundrauschen (utt.draw()
+static int window;
 
 void setup() {
-  size(1000, 700);
+  size(1800, 1300);
+  //fullScreen();
   TD = loadJSONObject("TrainingDataPelle01.json");
   surfs = new Surface[9];
   fontlist = PFont.list();
@@ -48,13 +51,16 @@ void setup() {
   RG.ignoreStyles(false);
   RG.setPolygonizer(RG.ADAPTATIVE);
   areas = new Areas(cats);
-  buildUtts(50);
+  buildUtts(900);
   mH = new MessageHighlight(20, messageFont); // adapted from https://processing.org/examples/forceswithvectors.html
   // margin1 = new Margin(incSurf.w, incSurf.h, 0.05);
   pickIncoming(); // pick first utt
   prgIncrement = 1.2;
   mFade = false;
-  frameRate(20);
+  startU = 0;
+  endU = 5;
+  window = 5;
+  frameRate(30);
 }
 
 void draw() {
@@ -66,7 +72,8 @@ void draw() {
     messageIn = !messageIn;
   }
 
-  for (int x=0; x<utts.size(); x++) {
+  for (int x=startU; x<endU; x++) {
+    println("utt(x)   " + x + " endU  " + endU);
     DisplayTD utt = utts.get(x);
     utt.draw();
     currentCol = utt.shapeColor;
@@ -82,8 +89,7 @@ void draw() {
     float gravity = 3 * mH.mass;
     mH.applyForce(gravity);
     mH.update();
-    mH.checkEdge(); 
-
+    mH.checkEdge();
   }
   if (mFade) {
     // ausblenden der surfaces
@@ -98,36 +104,14 @@ void draw() {
       image(surf.s, surf.pos.x, surf.pos.y);
     }
   }
+  if (startU >= utts.size()- window || endU > utts.size()-1) {
+    startU = 0;
+    endU = 10;
+  } else {
+    startU += window;
+    endU += window;
+  }
 }
-
-//void copyBackground() {
-//  // both areas of mainSurfaces are copied into dupSurf to replace the matching utt areas when mFade is active
-
-//  int startX = int(titleSurf1.pos.x);
-//  int widthX =  dupSurf1.w;
-//  int startY = int(titleSurf1.pos.y);
-//  int heightY = dupSurf1.h;
-//  int areaLength = dupSurf1.w * dupSurf1.h;
-
-//  PImage currentbg1 = mainSurf.s.get(startX, startY, widthX, heightY);
-//  currentbg1.loadPixels();
-//  dupSurf1.s.loadPixels();
-//  println("bg pix  " + currentbg1.pixels.length + "  dup pix   " + dupSurf1.s.pixels.length + "  area length " + areaLength);
-//  println("bg w  " + currentbg1.width + "  bg h  " + currentbg1.height + " dup width  " + dupSurf1.w + "  dup height  " + dupSurf1.h);
-//  arrayCopy(currentbg1.pixels, 0, dupSurf1.s.pixels, 0, areaLength);
-//  dupSurf1.s.updatePixels();
-
-//  int startX2 = int(titleSurf2.pos.x);
-//  int widthX2 = incSurf.w;
-//  int startY2 = int(titleSurf2.pos.y);
-//  int heightY2 =  dupSurf2.h;
-
-//  PImage currentbg2 = mainSurf.s.get(startX2, startY2, widthX2, heightY2);
-//  currentbg2.loadPixels();
-//  dupSurf2.s.loadPixels();
-//  arrayCopy(currentbg2.pixels, 0, dupSurf2.s.pixels, 0, areaLength);
-//  dupSurf2.s.updatePixels();
-//}
 
 void createScheduleTimer(final float ms) {
   messageLock = true;

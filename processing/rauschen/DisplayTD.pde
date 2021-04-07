@@ -41,8 +41,6 @@ class DisplayTD {
       mainSurf.s.fill(shapeColor);
       mainSurf.s.shape(this.shape, 0, 0, this.shapeSize, this.shapeSize);
       mainSurf.s.popMatrix();
-      sX += 0.01;
-      sY += 0.01;
     } else if (!this.isShape) {
       mainSurf.s.textAlign(CENTER, CENTER);
       mainSurf.s.textSize(random(40));
@@ -50,6 +48,8 @@ class DisplayTD {
     }
     moveText();
     mainSurf.s.endDraw();
+    sX += 0.01;
+    sY += 0.01;
   }
 
   void findArea() {
@@ -59,8 +59,8 @@ class DisplayTD {
         RPoint center = area.getCenter();
         float aW = area.getWidth();
         float aH = area.getHeight();
-        this.x = random(center.x - aW/3, center.x + aW/3);
-        this.y = random(center.y - aH/3, center.y + aH/3);
+        this.x = random(center.x - aW/3, center.x + aW/5);
+        this.y = random(center.y - aH/3, center.y + aH/5);
         sX = this.x;
         sY = this.y;
         // println("   cat   " + this.cat + " x  " + this.x + "   y  " + this.y);

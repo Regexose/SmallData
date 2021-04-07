@@ -119,7 +119,6 @@ class Surface { //<>//
       int alpha = (fillcol >> 24) & 0xFF;
       alpha = 255;
       fillcol = alpha<<24 | fillcol & 0xFFFFFF ;
-      println("ypos  " + yPos *i);
       this.s.fill(fillcol);
       this.s.text(cat, 0, yPos*i);
       this.s.noStroke();
