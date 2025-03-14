@@ -65,6 +65,10 @@ PathName(~samplesPath).entries.do({
 s.sync;
 
 ~hitSample = ~buffers[\atmos][\birds];
+~mbsGrain1 = ~buffers[\mumble_lec]['lec03-05'];
+~mbsGrain2 = ~buffers[\sn]['SD2'];
+
+
 
 //load melodies
 ~melPath = ~showFolder ++ "/melodies.sc";

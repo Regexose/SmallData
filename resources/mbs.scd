@@ -1,5 +1,86 @@
 // eine funktion für model grains
 // funktioniert nicht mit synthdefs,
+//////// MBS /////////
+SynthDef(\modelGrains, {
+    var exc, freqs, rings, amps, sig, env, trig, freqMod;
+    var freqArray = NamedControl.kr(\freq, [80, 120, 350, 1010]);
+    var ampArray = NamedControl.kr(\levels, [0.5, 0.24, 0.14, 0.423]);
+    var ringArray = NamedControl.kr(\ring, [0.1, 0.04, 0.04, 0.023]);
+    env = Env.perc(\atk.kr(0.01), \rls.kr(0.08), curve: \crv.kr(-4.0)).kr(2);
+    freqs = freqArray;
+    trig = Dust.kr(\trg.kr(4));
+    freqMod = TRand.kr( 1, 5, trig)  ;
+    exc = WhiteNoise.ar(\punch.kr(0.1)) * Decay2.kr(trig, 0.001, \dec.kr(0.9));
+    sig = DynKlank.ar(`[
+        freqs ,
+        ampArray.ampdb.normalizeSum,
+        ringArray
+    ], exc, \freqScale.kr(1), \freqOffset.kr(0), \decayScale.kr(0.1));
+    sig = sig * \amp.kr(0.3) * env;
+    sig = RLPF.ar(sig, \ffreq.kr(1000), \rq.kr(0.2));
+    sig = PanAz.ar(4, sig, \azi.kr(0.0), \level.kr(1.0), 2, 0.5);
+    Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef('VBAP4chan', { |azi = 0, ele = 0, spr = 0, width = 60, vbapBuf,
+    trg=4, punch=0.1, dec=0.9, freqScale=1, decayScale=0.1,
+    amp=0.3, ffreq=2000, rq=0.2|
+    var exc, sig, env, trig, freqMod, source, panned, freqs, amps, rings;
+    freqs = NamedControl.kr(\freqs, [80, 120, 350, 1010]);
+    amps = NamedControl.kr(\level, [0.5, 0.24, 0.14, 0.423]);
+    rings = NamedControl.kr(\ring, [0.1, 0.04, 0.04, 0.023]);
+    env = Env.perc(\atk.kr(0.01), \rls.kr(0.08), curve: \crv.kr(-4.0)).kr(2);
+    trig = Dust.kr(trg);
+    freqMod = TRand.kr( 1, 5, trig)  ;
+    exc = WhiteNoise.ar(punch) * Decay2.kr(trig, 0.001, dec);
+    sig = DynKlank.ar(`[
+        freqs,
+        amps.ampdb.normalizeSum,
+        rings
+    ], exc, freqScale, 0, decayScale);
+    sig = sig * amp ;
+    sig = RLPF.ar(sig, ffreq, rq) * env;
+    source = SinOsc.ar([440, 660], 0, Decay2.ar(Impulse.ar([1, 0.9]), 0.1, 0.2));
+    azi = azi.circleRamp;
+    panned = VBAP.ar(4, sig, vbapBuf, [azi - (0.5 * width), azi + (0.5 * width)], ele, spr);
+    [0, 1, 2, 3].do({arg bus, i; Out.ar(bus, panned[0][i])}); // in der Liste sind einfach die Outbusse
+    [0, 1, 2, 3].do({arg bus, i; Out.ar(bus, panned[1][i])});
+}).add;
+
+SynthDef(\sampleGrains, {
+    |buf=0,  end=(buf.numFrames-1)|
+    var sig, ptr, env;
+    env = Env.perc(\atk.kr(0.01), \rls.kr(0.08), curve: \crv.kr(-4.0)).kr(2);
+    ptr = Phasor.ar(0, BufRateScale.kr(buf)* \rate.kr(1.0) * \harm.kr(0).midiratio, \start.kr(0), end);
+    sig = BufRd.ar(2, buf, ptr);
+    sig = RLPF.ar(sig, \ffreq.kr(2000), \rq.kr(0.3));
+    sig = sig * \amp.kr(0.3) * env;
+    sig = PanAz.ar(4, sig, \azi.kr(0.0), 1.0, 2, 0.5);
+    Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\tgrainsMBS, {
+    var sig, env, buf, dur, azi;
+    buf = \buf.kr(0);
+    dur = \grainDur.kr(0.01);
+    //azi = LFSaw.kr(0.1).range(0.0, \azi.kr(1.5)).poll;
+    env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
+    sig = TGrains.ar(
+        numChannels: 4,
+        trigger: Dust.kr(\dens.kr(32)),
+        bufnum: buf,
+        rate: \rate.kr(1) * (\harm.kr([0, 0, 0, 0]).midiratio),
+        centerPos: \pos.kr(0.0),
+        dur: dur,
+        pan: \azi.kr(1.5),
+        amp: \grainAmp.kr(0.7),
+    );
+    //sig = RLPF.ar(sig, \ffreq.kr(2000), \rq.kr(0.9), 0.25) ;
+    //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+    sig = sig  * \amp.kr(0.4) * \fade.kr(1) * env;
+    //sig = PanAz.ar(4, sig, azi, \level.kr(1.0), 2, 0.5);
+    Out.ar(\out.kr(0), sig);
+}).add;
 
 
 ~vbapDissent = { |azi = 0, ele = 0, spr = 0,
@@ -26,30 +107,85 @@
 // PanAz mit 4 Lautsprechern
 ~modelKlank = {
     |cat|
-    var dur, pan, freqs;
+    var dur, idx, pans, freqs, punches;
     dur = rrand(1, 4);
+    pans = [0.0, 0.25, 0.5, 1.0, 1.5, 0.0, 0.25];
+    // Perspektivisch ein Dictionary
     case
-    {cat == \dis}{pan = 0.0; dur = 3; freqs = [146, 293, 370, 587, 1109]}
-    {cat == \pr}{pan = 0.25; dur = 4; freqs = [130, 261, 523, 1046, 2093]}
-    {cat == \con}{pan = 0.5; dur = 3; freqs = [98, 392, 493, 783, 1174]}
-    {cat == \lec}{pan = 1.0; dur = 2; freqs = [329, 659, 987, 1397, 2637]}
-    {cat == \ins}{pan = 1.5; dur = 2.2; freqs = [554, 698, 830, 987, 1108]}
+    {cat == \dis}{idx = 0; dur = 3; freqs = [146, 293, 370, 587, 1109]; punches = [0.2, 0.21, 0.18, 0.04, 0.1]}
+    {cat == \pr}{idx = 1; dur = 4; freqs = [130, 261, 523, 1046, 2093]; punches = [0.07, 0.08, 0.1, 0.04, 0.1]}
+    {cat == \con}{idx = 2; dur = 2; freqs = [98, 392, 493, 783, 1174]; punches = [0.14, 0.15, 0.18, 0.04, 0.13]}
+    {cat == \lec}{idx = 3; dur = 1; freqs = [329, 659, 987, 1397, 2637]; punches = [0.25, 0.31, 0.23, 0.14, 0.03]}
+    {cat == \ins}{idx = 4; dur = 7.2; freqs = [554, 698, 830, 987, 1108]; punches = [0.11, 0.1, 0.03, 0.02, 0.001]}
     {true}{"no more panAz".postln};
 
     freqs.do({
         |base, i|
 
         Synth(\modelGrains, [\freq, Array.fill(4, {exprand(base, base * 2)}),
-            \ring, [0.2, 0.1, 0.5, 0.1] * 5 ,
+            \ring, [0.2, 0.1, 0.5, 0.1] * dur ,
             \levels, rrand(0.1, 0.5) !4,
-            \azi, pan, \level, 0.5,
-            \dec, dur/3, \trg, rrand(2, 10),
-            \rls, dur, \punch, rrand(0.08, 0.3), \amp, rrand(0.02, 0.4),
-            \decayScale, 2 - (i* rrand(0.01, 0.15)), \freqScale, 1 - (i * rrand(0.2, 0.5)),
-            \ffreq, 4500 - (i* rrand(110, 330)), \rq, 0.2,
+            \azi, rrand(pans[idx], pans[idx+1]), \level, 0.5,
+            \dec, dur/3, \trg, dur+ i,
+            \rls, dur, \punch, punches[idx], \amp, 0.4,
+            \decayScale, 2 - (i* rrand(0.01, 0.15)), \freqScale, pans[idx],
+            \ffreq, rrand(freqs[3], freqs[4]), \rq, 0.2,
             \out, 0
         ])
     })
+};
+
+// VBAP Synth mit 4 Lautsprechern
+~vbapKlank = {
+    |cat|
+    var dur, idx, pans, freqs, punches;
+    dur = rrand(1, 4);
+    pans = [-30, 30, 130, -130, -30, 30, 130];
+    // Perspektivisch ein Dictionary
+    case
+    {cat == \dis}{idx = 0; dur = 3; freqs = [146, 293, 370, 587, 1109]; punches = [0.2, 0.21, 0.18, 0.04, 0.1]}
+    {cat == \pr}{idx = 1; dur = 4; freqs = [130, 261, 523, 1046, 2093]; punches = [0.07, 0.08, 0.1, 0.04, 0.1]}
+    {cat == \con}{idx = 2; dur = 2; freqs = [98, 392, 493, 783, 1174]; punches = [0.14, 0.15, 0.18, 0.04, 0.13]}
+    {cat == \lec}{idx = 3; dur = 1; freqs = [329, 659, 987, 1397, 2637]; punches = [0.25, 0.31, 0.23, 0.14, 0.03]}
+    {cat == \ins}{idx = 4; dur = 7.2; freqs = [554, 698, 830, 987, 1108]; punches = [0.11, 0.1, 0.03, 0.02, 0.101]}
+    {true}{"endOfCat".postln};
+
+    Synth(\VBAP4chan, [\freq, Array.fill(4, {exprand(freqs[idx], freqs[idx] * 2)}),
+        \ring, [0.2, 0.1, 0.5, 0.1] * dur ,
+        \level, rrand(0.1, 0.5) !4,
+        \azi, rrand(pans[idx], pans[idx+1]), \level, 0.5,
+        \dec, dur/3, \trg, dur + idx,
+        \rls, dur, \punch, punches[idx], \amp, 0.4,
+        \decayScale, 2 - (idx* rrand(0.01, 0.15)), \freqScale, pans[idx],
+        \ffreq, rrand(freqs[3], freqs[4]), \rq, 0.2])
+
+};
+
+
+~modelGrains = {
+    |cat|
+    var dur, pan, dens;
+    dur = rrand(1, 4);
+    // Perspektivisch ein Dictionary
+    case
+    {cat == \dis}{pan = 0.0; dur = 3; dens = 12}
+    {cat == \pr} {pan = 0.25; dur = 4; dens = 9}
+    {cat == \con}{pan = 0.5; dur = 2; dens = 18}
+    {cat == \lec}{pan = 1.0; dur = 1; dens = 42}
+    {cat == \ins}{pan = 1.5; dur = 7.2; dens = 25}
+    {true}{"no more panAz".postln};
+
+    Synth(\tgrainsMBS, [
+        \buf, ~mbsGrain1,
+        \dens, dens,
+        \pos, dens.reciprocal,
+        \grainDur, 0.05,
+        \azi, pan, \grainAmp, dens * 0.01,
+        \rls, dur/2,
+        \carfreq, rrand(500, 2000), \fmAmp, rrand(0.02, 0.4),
+        \ffreq, dens * 80, \rq, 0.2,
+        \out, 0
+    ])
 };
 (
 /*{

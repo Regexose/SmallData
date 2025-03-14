@@ -28,92 +28,8 @@ synthArgs.postln;
 Synth(~states.pr.pr0.instrument, [\freq, 300]);
 )
 
-(
-// Versuch für MBS, wie die Kategoriezonen unterschiedlich nachklingen
-~g = Group.new;
-[80, 200, 450, 720, 810].do({
-    |base, i|
-    var dur = rrand(1, 4);
-    var pan = [0.0, 0.5, 1.0, 1.5].choose;
-    Synth(\modelGrains, [\freq, Array.fill(4, {exprand(base, base * 2)}),
-        \ring, [0.2, 0.1, 0.5, 0.1] * 5 ,
-        \levels, rrand(0.1, 0.5) !4,
-        \azi, pan, \level, 0.5,
-        \dec, dur/4, \trg, rrand(2, 10),
-        \rls, dur, \punch, rrand(0.08, 0.3), \amp, rrand(0.02, 0.4),
-        \decayScale, 2 - (i* rrand(0.01, 0.15)), \freqScale, 1 - (i * rrand(0.2, 0.5)),
-        \ffreq, 4500 - (i* rrand(110, 330)), \rq, 0.2
-    ], ~g);
-   Synth(\percImp, [
-         \decayScale, 2, \rls, dur, \freq, base, \maxfrq, base *2, \pan, -1 + (i*0.4), \amp, 0.14
-    ], ~g)
-});
-)
-~g.free
 
 
-x = { |azi = 0, ele = 0, spr = 0|
-    var exc, sig, env, trig, freqMod;
-    var freqs = [80, 120, 350, 1010];
-    var amps = [0.5, 0.24, 0.14, 0.423];
-    var rings = [0.1, 0.04, 0.04, 0.023];
-    trig = Dust.kr(4);
-    freqMod = TRand.kr( 1, 5, trig)  ;
-    exc = WhiteNoise.ar(0.2) * Decay2.kr(trig, 0.001, 2);
-    sig = DynKlank.ar(`[
-        freqs,
-        amps.ampdb.normalizeSum,
-        rings
-    ], exc, 1, 0, 1);
-    sig = sig * 0.3 ;
-VBAP.ar(4, sig,  ~panbuf, azi, ele, spr);
-}.scope;
-
-x.set(\azi, 112)
-x.set(\freq, Array.fill(4, {exprand(200, 1000)}), \ring, exprand(0.08, 0.5)!4  * 3,
-    \levels, rrand(0.1, 0.6) !4, \trg, 12, )
-x.free
-
-
-
-(// vbap synthdef..
-
-v = Synth(\vbap, [\in, ~vbapIn, \panbuf, ~panbuf]);
-//x = Synth(\modelGrains, [\out, ~vbapIn]);
-
-Pbindef(\mg,
-    \instrument, \modelGrains,
-    \dur, 0.5,
-    \freq, Array.fill(4, {exprand(200, 1000)}),
-    \ring, exprand(0.08, 0.5)!4  * 5,
-    \levels, rrand(0.1, 0.6) !4,
-    \rls, 2,
-    \out, ~vbapIn).play
-v.set(\azi, 30)
-v.free
-)
-
-
-
-(
-v = Routine({
-    loop{
-        [-40, 40, -130, 130].do({|ang| x.set(\azi, ang); 1.wait; }.fork) ;
-    }
-}).play
-)
-
-
-// test them out
-loop{[-40, 40, -130, 130].do({|ang| x.set(\azi, ang); 1.wait; }) }.fork;
-
-// try the spread
-x.set(\spr, 20);
-x.set(\spr, 100); // all speakers
-
-x.free; b.free;
-
-)
 
 (
 Pbindef(\hh01, \dur, 0.25, \freq, 600, \maxFreq, 1300, \fade, 1).play(~t, quant:8);
@@ -152,12 +68,29 @@ var n = 23;
 ~allocate.(\lec, n);
 ~allocate.(\pr, n);
 ~allocate.(\con, n);*/
+Synth(\tgrainsMBS, [\buf, ~mbsGrain2, \pos, 0.03, \azi, 0.25, \rate, 1.0, \amp, 0.1, \grainDur, 0.02, \harm, [2, -3, 5, 1], \grainAmp, 0.3])
+Synth(\tgrains, [\buf, ~mbsGrain2, \pos, 0.04, \grainDur, 0.01, \amp, 0.1, \azi, 1.5])
 
-~allocate.(\dis, 42);
-~allocate.(\ins, 41);
-~allocate.(\lec, 43);
-~allocate.(\pr, 40);
-~allocate.(\con, 41)
+Pbindef(\samp,
+    \instrument, \sampleGrains,
+    \buf, Pfunc({~buffers[\sn].choose}),
+    \dur, 0.3,
+    \rls, 0.1,
+    \azi, Pwhite(0.0, 1.5, inf),
+    \ffreq, Pwhite(1200, 2400, inf),
+    \rate, Pwhite(0.8, 1.4, inf),
+    \amp, Pwhite(0.1, 0.4, inf)
+).play
+
+Pbindef(\samp, \amp, Pwhite(0.4, 0.6, inf), \rate, 1, \rls, 0.2, \ffreq, Pwhite(1200, 2400, inf), \rq, 0.4, \dur, 0.2, \azi, 0.5, \buf, Pfunc({~buffers[\himid].choose}) )
+Pbindef(\samp).stop
+
+s.defaultGroup.freeAll
+~allocate.(\dis, 1);
+~allocate.(\ins, 1);
+~allocate.(\lec, 3);
+~allocate.(\pr, 1);
+~allocate.(\con, 1)
 
 ~melos.melo.dis00
 ~states.dis.dis00
