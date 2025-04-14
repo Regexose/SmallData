@@ -102,10 +102,10 @@
 ~buildRotaryFader = {
 	|top, posx, posy, offset, size, constants, mins, maxes|
 	var knobs, knobView, constant, knobData, newValues;
-	knobView = CompositeView(top, Rect(posx, posy, (size*3) + (4*offset), size*2 + offset))
+	knobView = CompositeView(top, Rect(posx, posy, size*4, size*3))
 	.background_(~style_1.at("bank_frame_color"));
 	knobs = Array.fill(3, {|i|
-		Knob(knobView, Rect((size+offset) * i + offset, offset, size, size))
+		Knob(knobView, Rect(0, offset * i, size, size))
 		.background_(~style_1["lightgrey"])
 		.visible_(true)
 		.enabled_(true)
@@ -115,13 +115,13 @@
 		});
 	});
 	newValues = Array.fill(3, {|i|
-		StaticText(knobView, Rect((size+offset) * i + offset, size+(2*offset), size, size))
+        StaticText(knobView, Rect(offset, size * i, size, size))
 		.string_(constants[i] ++ " : " ++ currentEnvironment.at(constants[i]))
 		.background_(~style_1.at("bank_frame_color"))
 		.font_(~style_1.at("text_font"))
 		.align_(\center)
 	});
-	knobData = [knobView, knobs, newValues];
+    knobView.layout_(HLayout(VLayout(*knobs), VLayout(*newValues)));
 };
 
 ~buildSequencerButtons = {
