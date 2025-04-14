@@ -374,3 +374,10 @@
     m.sendMsg("/interpreter_input", ~story[~storyIndex % ~story.size], cat, ~resourcePath ++ "samples/lec01/");
     ~storyIndex = ~storyIndex +1;
 };
+
+~tdIn = OSCdef(\in, {
+    |msg, time, addr, recvPort|
+    //[msg, time, addr, recvPort].postln;
+    ~mock.();
+},
+'/tdin');5

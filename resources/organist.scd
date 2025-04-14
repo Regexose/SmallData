@@ -7,13 +7,8 @@
 	value = MIDIFunc.cc({
 		arg ...args;
 		args[..2].postln;
-		if (i < 6, {
-			"activated  % ".format(ch.asString).postln;
-			~cat2Channel[ch].level = args[0].linlin(0, 127, 0.0, 1.0);
-		}, {
-			"activated  % ".format(ch.asString).postln;
-			~cat2Channel[ch].level = args[0].linlin(0, 127, 0.0, 1.0);
-		})
+        "activated  %  channel % level %".format(ch.asString, ~cat2Channel[ch], ~utt.level).postln;
+		~cat2Channel[ch].level = args[0].linlin(0, 127, 0.0, 1.0);
 	},
 	i,
 	1

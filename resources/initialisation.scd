@@ -49,23 +49,7 @@
 	});
 });
 
-/*
-alte Art, Samples als Listen zu laden
 
-PathName(~samplesPath).entries.do({
-		arg subfolder;
-	//subfolder.postln;
-		~buffers.add(
-			subfolder.folderName.asSymbol ->
-			Array.fill(
-				subfolder.entries.size,
-				{
-					arg i;
-					Buffer.read(s, subfolder.entries[i].fullPath);
-				}
-			)
-		)
-	});*/
 
 // Samples mit Titel laden
 PathName(~samplesPath).entries.do({
@@ -171,9 +155,10 @@ PathName(~midiFolder).entries.do({
 		\lec: ~ch5,
 		\ins: ~ch3,
 		\perc: ~perc,
-		\utt : ~perc,
+		\utt : ~utt,
 		\bass: ~bass
 	)
 );
 
 };
+
