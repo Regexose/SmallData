@@ -149,3 +149,4 @@ s.waitForBoot({
 ~sim.stop;
 ~isPrelude = true;
 ~isPrelude = false;
+currentEnvironment.keys.do({|k| k.postln;})

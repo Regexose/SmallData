@@ -1,3 +1,5 @@
+// diese Werte werden von den constants.scd in dem show Ordner ggf überschrieben
+
 ~fx1Bus = Bus.audio(s,2);
 ~fx2Bus = Bus.audio(s,2);
 ~fx3Bus = Bus.audio(s,2);
