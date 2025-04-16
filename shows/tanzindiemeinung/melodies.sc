@@ -126,11 +126,12 @@ slots:(
 	// sample Slots
 	zahlen: ~numSlots.collect({|n| var name = ~buffers[\zahlen].keys.asArray.sort[(n%8)]; ~buffers[\zahlen][name]}),
 	utt: ~numSlots.collect({|n| var name =~buffers[\lec01].keys.asArray.sort[n+1]; ~buffers[\lec01][i]}),
-	con: ~buffers[\catSampEn][\concession],
-	dis: ~buffers[\catSampEn][\dissent],
-	ins: ~buffers[\catSampEn][\insinuation],
-	lec: ~buffers[\catSampEn][\lecture],
-	pr: ~buffers[\catSampEn][\praise],
+	// für englische Sample \concession etc
+    con: ~buffers[\catSampDe][\zugestaendnis],
+	dis: ~buffers[\catSampDe][\widerspruch],
+	ins: ~buffers[\catSampDe][\unterstellung],
+	lec: ~buffers[\catSampDe][\belehrung],
+	pr: ~buffers[\catSampDe][\lob],
 
 ),
 

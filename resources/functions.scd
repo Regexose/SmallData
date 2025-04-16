@@ -219,19 +219,31 @@
 
 ~feedBackSounds = {
     |cat|
+    var numNotes = 1;
     "feedback sounds solo with %".format(cat).postln;
-    2.do{
-            |n|
-            Pbind(
-                \instrument, \sampMon,
-                \dur, Prand([0.25, 0.31], 1),
-                \buf, ~melos[\slots][cat].normalize,
-                \amp, ~fbVol, \pan, 0,
-                \rate, Prand([[1, 1.03], [1, 1.18], [0.97, 1.101], [0.83, 0.91]], 1),
-                \atk, 0.05, \rls, Pkey(\dur), \crv, -4,
-                \out, ~utt.inbus
-            ).play;
-        }
+
+    Pbind(
+        \instrument, \sampMon,
+        \dur, Prand([0.25, 0.31], numNotes),
+        \buf, ~melos[\slots][cat].normalize,
+        \amp, ~fbVol, \pan, 0,
+        \rate, Prand([[1, 1.03], [1, 1.18], [0.97, 1.101], [0.83, 0.91]], 1),
+        \atk, 0.05, \rls, Pkey(\dur), \crv, -4,
+        \out, ~utt.inbus
+    ).play;
+    Pbind(
+        \instrument, \fm,
+        \dur, Prand([0.35, 0.38], numNotes),
+        \freq, Array.fill(2, {~melos[\feedbacks][cat].midicps}),
+        \amp, ~fbVol , \pan, 0,
+        \mod, 0.8,
+        \fmFreq, numNotes * Pkey(\freq),
+        \fmVol, [100, 60],
+        \atk, 0.05, \rls, 2, \crv, -4,
+        \cgain, 1,
+        \out, ~utt.inbus
+    ).play;
+
 };
 
 

@@ -59,8 +59,7 @@
     // feedback sound
     if(count >= 10,
         { ~mum.(catName, ~uttsPerMinute[catName], 0.25)}
-        ,{2.do{
-            |n|
+        ,{
             Pbind(
                 \instrument, \sampMon,
                 \dur, Prand([0.25, 0.31], numNotes),
@@ -68,10 +67,23 @@
                 \amp, ~fbVol * local_feedbackVol, \pan, 0,
                 \rate, Prand([[1, 1.03], [1, 1.18], [0.97, 1.101], [0.83, 0.91]], numNotes),
                 \atk, 0.05, \rls, Pkey(\dur), \crv, -4,
+                \cgain, 0.75,
+                \out, ~utt.inbus
+            ).play;
+
+             Pbind(
+                \instrument, \fm,
+                \dur, Prand([0.25, 0.31], numNotes),
+                \freq, Array.fill(2, {~melos[\feedbacks][catName].midicps}),
+                \amp, ~fbVol * local_feedbackVol, \pan, 0,
+                \mod, 0.8,
+                \fmFreq, numNotes * Pkey(\freq),
+                \fmVol, [100, 60],
+                \atk, 0.05, \rls, Pkey(\dur), \crv, -4,
                 \cgain, 1,
                 \out, ~utt.inbus
             ).play;
-        };}
+        }
     );
 
 
