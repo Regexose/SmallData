@@ -3,7 +3,7 @@
     var c, dura, patName, status, count, case_count, local_feedbackVol, numNotes;
     count = floor(counter * ~factor).asInteger;
     status = "";
-    "counter % factor % count %".format(counter, ~factor, count).postln;
+    //"counter % factor % count %".format(counter, ~factor, count).postln;
     local_feedbackVol = 0.45;
     numNotes = 1;
     dura = Env.new([1,0], [count], [-2]).asPseg;

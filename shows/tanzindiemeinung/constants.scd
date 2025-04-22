@@ -16,4 +16,7 @@
 ~volStep = 0.003; //vol reduction in continuous FadeOut
 ~fadeVols = 0; //the volumes of all fading Patterns
 ~thresCont = 0.1; // threshold from which to continuously fade Out
-~maxCatCounter = 60;
+~maxCatCounter = 400;
+~td = NetAddr("192.168.1.175", 7000);
+//~td = NetAddr("192.168.1.100", 7000);
+//~td = NetAddr("127.0.0.1", 7000);

@@ -102,17 +102,17 @@
 ~buildRotaryFader = {
 	|top, posx, posy, offset, size, constants, mins, maxes, default|
 	var knobs, knobView, constant, knobData, newValues;
-	knobView = CompositeView(top, Rect(posx, posy, size*4, size* constants.size))
+	knobView = CompositeView(top, Rect(posx, posy, size*5, size* constants.size))
 	.background_(~style_1.at("bank_frame_color"));
 	knobs = Array.fill(constants.size, {|i|
 		Knob(knobView, Rect(0, offset * i, size, size))
 		.background_(~style_1["lightgrey"])
 		.visible_(true)
 		.enabled_(true)
-        .valueAction_(default[i].linlin(mins[i], maxes[i], 0, 1))
+        .valueAction_(default[i].linlin(mins[i], maxes[i], 0, 1).trunc(0.01))
 		.action_({|v|
 			currentEnvironment.put(constants[i], v.value.linlin(0.0, 1.0, mins[i], maxes[i]));
-			newValues[i].string = constants[i] ++ " : " ++ v.value.linlin(0.0, 1.0, mins[i], maxes[i]).trunc(0.001);
+			newValues[i].string = constants[i] ++ " : " ++ v.value.linlin(0.0, 1.0, mins[i], maxes[i]).trunc(0.01);
 		});
 	});
 	newValues = Array.fill(constants.size, {|i|
@@ -134,12 +134,12 @@
         |i|
         Button(buttonView, Rect(0, i, size, size))
         .background_(~style_1["lightgrey"])
-        .valueAction_(1)
+        .valueAction_(0)
         .states_([
             [labels[i] ++ "On", Color.white, Color.blue],
             [labels[i] ++ "Off", Color.white, Color.red]
         ])
-        .action_({|b| if (b.value==1, {"prelude On".postln; ~isPrelude=false}, {"prelude Off".postln; ~isPrelude=true})})
+        .action_({|b| if (b.value==1, {~isPrelude=false; "prelude % %".format(b.value, ~isPrelude).postln; }, {~isPrelude=true; "prelude %  %".format(b.value, ~isPrelude).postln; })})
     });
     buttonView.layout_(HLayout(VLayout(*buttons)))
 };
@@ -299,7 +299,7 @@
 	compView.decorator.gap_(0@0);
 	array = Array.fill(6, {arg i;
 		StaticText(compView, Rect(posx, posy, width/6, height))
-		.string_(labels.at(i) ++ "\n" ++ counts[i])
+        .string_(labels.at(i) ++ "\n" ++ floor(counts[i]).asString)
 		.background_(~style_1[labels[i].asString])
 		.font_(~style_1.at("subheader_font"))
 		.align_(\top);

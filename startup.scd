@@ -4,7 +4,7 @@
 ~configFile = ~projectRoot ++ "config.scd";
 ~configFile.load;
 ~resourcePath = ~projectRoot ++ "resources/";
-
+Server.killAll;
 Server.default.options.numInputBusChannels_(1);
 Server.default.options.outDevice_(~audioInterface);
 Server.default.options.inDevice_(~audioInterface);
@@ -116,8 +116,8 @@ s.waitForBoot({
         /*    postf("\nnew utt: %", msg[1]);
             postf("\nnew cat: %\n", msg[2]);*/
             ~cat = msg[2];
-            //if (~td.isConnected, { ~td.sendMsg("/tdIn", msg[1], msg[2])});
-            ~td.sendMsg("/tdIn", msg[1], msg[2]);
+            if (~td.isConnected, { ~td.sendMsg("/tdIn", msg[1], msg[2])});
+            //~td.sendMsg("/tdIn", msg[1], msg[2]);
 
             if (~isPrelude == true) {
                 "prelude".postln;
@@ -127,7 +127,7 @@ s.waitForBoot({
                 ~blinkSelector.();
                 if(msg[3] != nil, {~addNewSample.(msg[3])});
                 //~allocate.(~categorySymbols[~cat], ~uttDict[~cat])
-                ~setGlobal.value();
+                ~setGlobal.();
                 //"debug OSC: cat %".format(msg[2]).postln;
             }
         },

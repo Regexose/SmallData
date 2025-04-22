@@ -10,8 +10,8 @@ mcTop = ~buildTopLevel.(mcWindow, 10, 10, mcCatwidth*14, mcCatheight*5+360);
 ~mcTrack = ~buildMcTrack.(mcTop, 10, 0,  mcCatwidth*5+20, mcCatheight *3, 5, mcCatwidth);
 ~mcLabels = ~buildMcLabels.(mcTop, 10, mcCatheight *3 + 30, mcCatwidth*6 , 60, mcCatwidth, ~uttDict);
 ~status = ~buildStatus.(mcWindow, mcCatwidth*6 +50, 20, mcCatwidth * 3, mcCatheight * 3.5, ~lastUtterances);
-densityKnobs = ~buildRotaryFader.(mcWindow, mcCatwidth*10 , 20,  offset, rotarysize, [\thresCont, \addFac, \subFac, \factor], [0.005, 0.5, 0.1, 0.1], [0.4, 1.7, 2.0, 2], [0.1, 1.0, 0.5, 1]);
-buttons = ~buildButtons.(mcWindow, mcCatwidth*10 , mcCatheight*2,  offset, rotarysize, [\prelude]);
+densityKnobs = ~buildRotaryFader.(mcWindow, mcCatwidth*10 , 20,  offset, rotarysize, [\thresCont, \addFac, \subFac, \factor, \uttWindow], [0.005, 0.5, 0.1, 0.1, 10], [0.4, 1.7, 2.0, 2, 75], [0.1, 1.0, 0.5, 1, 30]);
+buttons = ~buildButtons.(mcWindow, mcCatwidth*10 , mcCatheight*3,  offset, rotarysize, [\prelude]);
 
 CmdPeriod.add({
 	mcWindow.close;
