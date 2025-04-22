@@ -83,12 +83,18 @@ var n = 23;
 ~allocate.(\lec, n);
 ~allocate.(\pr, n);
 ~allocate.(\con, n);*/
+s.makeWindow
 
-~allocate.(\dis, 41);
-~allocate.(\ins, 40);
-~allocate.(\lec, 43);
-~allocate.(\pr, 40);
-~allocate.(\con, 40)
+~allocate.(\dis, 14);
+~allocate.(\ins, 41);
+~allocate.(\lec, 33);
+~allocate.(\pr, 30);
+~allocate.(\con, 25)
+~feedBackSounds.(~categorySymbols['praise']);
+~feedBackSounds.(~categorySymbols['concession']);
+~feedBackSounds.(~categorySymbols['lecture']);
+~feedBackSounds.(~categorySymbols['insinuation']);
+~feedBackSounds.(~categorySymbols['dissent']);
 
 ~melos.melo.dis00
 ~states.dis.dis00

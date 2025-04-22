@@ -116,7 +116,8 @@ s.waitForBoot({
         /*    postf("\nnew utt: %", msg[1]);
             postf("\nnew cat: %\n", msg[2]);*/
             ~cat = msg[2];
-            if (~td.isConnected, { ~td.sendMsg("/tdIn", msg[1], msg[2])});
+            //if (~td.isConnected, { ~td.sendMsg("/tdIn", msg[1], msg[2])});
+            ~td.sendMsg("/tdIn", msg[1], msg[2]);
 
             if (~isPrelude == true) {
                 "prelude".postln;

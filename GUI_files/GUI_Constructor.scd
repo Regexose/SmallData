@@ -111,8 +111,8 @@
 		.enabled_(true)
         .valueAction_(default[i].linlin(mins[i], maxes[i], 0, 1))
 		.action_({|v|
-			currentEnvironment.put(constants[i], v.value.lincurve(0.0, 1.0, mins[i], maxes[i]));
-			newValues[i].string = constants[i] ++ " : " ++ v.value.lincurve(0.0, 1.0, mins[i], maxes[i]).trunc(0.001);
+			currentEnvironment.put(constants[i], v.value.linlin(0.0, 1.0, mins[i], maxes[i]));
+			newValues[i].string = constants[i] ++ " : " ++ v.value.linlin(0.0, 1.0, mins[i], maxes[i]).trunc(0.001);
 		});
 	});
 	newValues = Array.fill(constants.size, {|i|
@@ -123,6 +123,25 @@
 		.align_(\center)
 	});
     knobView.layout_(HLayout(VLayout(*knobs), VLayout(*newValues)));
+};
+
+~buildButtons = {
+    |top, posx, posy, offset, size, labels|
+    var buttonView, buttons;
+    buttonView = CompositeView(top, Rect(posx, posy, size * 2,  size * labels.size))
+    .background_(~style_1.at("bank_frame_color"));
+    buttons = Array.fill(labels.size, {
+        |i|
+        Button(buttonView, Rect(0, i, size, size))
+        .background_(~style_1["lightgrey"])
+        .valueAction_(1)
+        .states_([
+            [labels[i] ++ "On", Color.white, Color.blue],
+            [labels[i] ++ "Off", Color.white, Color.red]
+        ])
+        .action_({|b| if (b.value==1, {"prelude On".postln; ~isPrelude=false}, {"prelude Off".postln; ~isPrelude=true})})
+    });
+    buttonView.layout_(HLayout(VLayout(*buttons)))
 };
 
 ~buildSequencerButtons = {

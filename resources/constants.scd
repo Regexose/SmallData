@@ -28,5 +28,9 @@
 ~maxCatCounter = 15; // max value of categoryCounter (counter is reset if this value is reached
 ~upmMax = 25;
 ~td = NetAddr("192.168.1.175", 7000);
+//~td = NetAddr("192.168.1.100", 7000);
 //~td = NetAddr("127.0.0.1", 7000);
+~td.sendStatusMsg
+
+
  
