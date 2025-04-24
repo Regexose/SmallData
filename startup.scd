@@ -27,6 +27,7 @@ s.waitForBoot({
     (~resourcePath ++ "constants.scd").load;
     (~resourcePath ++ "initialisation.scd").load;
     (~resourcePath ++ "functions.scd").load;
+    (~resourcePath ++ "global.scd").load;
     (~resourcePath ++ "organist.scd").load;
 
     // LOAD GUI FILES
