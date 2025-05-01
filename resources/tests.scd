@@ -2,18 +2,24 @@
 ~sim = Routine(
     { loop ( {
         ~mock.();
-        [0.76, 1, 0.5].choose.wait;
+        [0.76, 1, 1.5].choose.wait;
 		//"mocked" .postln;
         }
 ) }).play;
 )
+~t.tempo * 60
 
+
+)
+TempoClock
 ~sim.stop
 
 ~upmMax = 30
 ~melos[\seqRates]
 ~isPrelude = false
 ~isPrelude = true
+
+Pbindef.all.do(_.stop)
 
  ~mum.(~cat, ~uttsPerMinute[~cat], 0.25);
 (
@@ -49,9 +55,12 @@ Pbindef(\bass).play(~t, quant:8)
 )
 (
 Pbindef(\hh01, \dur, 0.25, \freq, 600, \maxFreq, 1300, \fade, 1).play(~t, quant:8);
-Pbindef(\kik02, \freq, ~melos.melo.kik02, \dur, ~melos.dur.kik02).play(~t, quant:8);
-Pbindef(\sn01, \freq, Pseq([ \, 67, \, 67, \, 67, \, 67, \, 67, 67, \, 67, \, 67, \, 67 ], inf).trace, \dur, 0.25).play(~t, quant:8);
-Pbindef(\bass, \midinote, ~melos.melo.bass23, \dur, ~melos.dur.bass23, \modRate, 0.1, \fmratio, 3, \rls, 0.3, \oscFB, pi/4,).play(~t, quant:8);
+Pbindef(\kik02).play(~t, quant:8);
+Pbindef(\kik02, \freq, ~melos.melo.kik01, \sweep, 0.09, \timb2, -12, \timb1, -12, \rls, 2, \lpf, 1300, \thr, 0.85, \cgain, 1.3).quant_(4);
+Pbindef(\sn01, \freq, Pseq([ \, 67, \, 67, \, 67, \, 67, \, 67, 67, \, 67, \, 67, \, 67 ], inf), \dur, 0.5).play(~t, quant:8);
+Pbindef(\sn01, \shaper1, 2.2, \shaper2, 2.2)
+Pbindef(\bass, \oscFB, pi *3/4).quant_(8)
+Pbindef(\bass, ).isPlaying;
 Pbindef(\hh01, \dur, 0.25, \freq, 600, \maxFreq, 1300, \fade, 1).quant_(8);
 Pbindef(\kik02, \freq, ~melos.melo.kik02, \timb1, -3, \timb2, -16, \sweep, 0.03, \rls, 2, \dist, 2, \amp, 0.65).quant_(8);
 Pbindef(\sn01, \freq, ~melos.melo.sn02, \dist1, 13, \dist2, -4, \rls, 2 ).quant_(8);
@@ -74,7 +83,8 @@ Pbindef(\lec, \rls, 0.5, \vibF, 3, \vibVol, 10, \fmDur, 0.05, \index, 1, \mRatio
 
 )
 Pbindef.all.do(_.stop)
-Pbindef(\sn01, \dur, Pseq([0.25, 0.25, 0.75, 0.25, 0.5, 0.25, 0.5, 0.25, 1.0, 0.25, 0.25, 0.75, 0.25, 0.5, 0.25, 0.5, 0.25],inf).trace)
+Pbindef(\sn01, \shaper1, 0.1, \shaper2, 0.8, \rls, 0.1)
+Pbindef(\kik02, \timb1, -1, \timb2, -2, \rls, 1, \amp, 0.5, \dist, 3, \sweep, 0.1, \lpf, 2000)
 
 (
 var n = 23;
@@ -94,26 +104,38 @@ s.makeWindow
 ~allocate.(\con, 55)
 
 ~percTest = {
-        |count=40, case_count=1, melkick, durkick, melsnare, dursnare,  melbass, melhh|
-        Pbindef(\kik02, \freq, melkick, \dur, durkick, \dist, case_count * 0.75).quant_(8).play(~t);
-        Pbindef(\sn01, \freq, melsnare, \dur, dursnare, \dist1, 13, \dist2, -4, \rls, 2 ).quant_(8).play(~t);
-        Pbindef(\hh01, \dur, Pif((count%3==0), 0.0625, 0.25), \decayScale, Pwhite(0.6, 1.2, inf),
-            \carAmp, Pif((count%3==0), melhh, ~melos.melo.hh01), \fade, 1, \amp, 0.5,
-        ).quant_(8).play(~t);
-        Pbindef(\bass, \dur, Pif(case_count.even, 0.25, 0.5), \modRate, 1.5,
-            \midinote, Pif(case_count.even, melbass, ~melos.melo.bass37),
-            \rls, 1.5, \fmratio, 3, \slide1, 0.5, \distort, 1.5).quant_(8).play(~t);
-    }
+    |count=40, case_count=1, melkick, durkick, melsnare, dursnare,  melbass, durbass, melhh|
+    var kicks, durkicks, snares, dursnares, basses, durbasses;
+    kicks = [\kik01, \kik02, \kik03, \kik04, \kik05, \kik10].collect({|n| ~melos.melo[n]});
+    durkicks = [\kik02, \kik02, \kik03,\kik04,\kik05,\kik10].collect({|n| ~melos.dur[n]});
+    snares = [\sn02, \sn02,\sn03,\sn04,\sn05,\sn06].collect({|n| ~melos.melo[n]});
+    dursnares = [\sn02, \sn02,\sn03,\sn04,\sn05,\sn06].collect({|n| ~melos.dur[n]});
+    basses = [\bass37, \bass35,\bass33,\bass25,\bass15,\bass10].collect({|n| ~melos.melo[n]});
+    durbasses = [\bass23, \bass24, \bass20, \bass15,\bass10,\bass10].collect({|n| ~melos.dur[n]});
+    Pbindef(\kik02, \freq, melkick, \dur, durkick, \dist, 1.5, \cgain, 2.5, \lpf, 2000, \timb1, -3).quant_(8);
+    Pbindef(\sn01, \freq, melsnare, \dur, dursnare, \dist1, 13, \dist2, -4, \rls, 1 ).quant_(8);
+    Pbindef(\hh01, \dur, Pif((count%3==0), 0.0625, 0.25), \decayScale, Pwhite(0.6, 1.2, inf),
+        \carAmp, Pif((count%3==0), melhh, ~melos.melo.hh01), \fade, 1, \amp, 0.5,
+    ).quant_(8);
+    Pbindef(\bass, \dur, Pif(case_count.even, durbass, 0.25), \modRate, 1.5,
+        \midinote, Pif(case_count.even, melbass, melbass),
+        \rls, 1.5, \fmratio, 3, \slide1, 0.5, \distort, 1.5).quant_(8);
+}
 
-~percTest.(43, 4, ~melos.melo.kik02, ~melos.dur.kik02, ~melos.melo.sn04, ~melos.dur.sn04, ~melos.melo.bass35, ~melos.melo.hh01 )
+~percTest.(25, 6, ~melos.melo.kik07, ~melos.dur.kik07, ~melos.melo.sn02, ~melos.dur.sn02, ~melos.melo.bass25,  ~melos.dur.bass25, ~melos.melo.hh01 )
 (
 ~isPrelude = false;
 ~mock.();
-//[\kik02, \sn01, \hh01, \bass].do({|k| Pbindef(k).play(~t)});
-~categoryTranslator.keys.do({|k| ~uttDict[k.asSymbol] = 52})
+~totalUtts = 87;
+[\kik02, \sn01, \hh01, \bass].do({|k| Pbindef(k).play(~t)});
+Pbindef(\sn01).play(~t, quant:4)
+Pbindef(\sn01).stop
+~categoryTranslator.keys.do({|k| ~uttDict[k.asSymbol] = 24})
 )
 (
-~totalUtts = 141;
+~categoryTranslator.keys.do({|k| ~uttDict[k.asSymbol] = 33});
+
+~totalUtts = 108;
 ~setGlobal.()
 )
 

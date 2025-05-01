@@ -17,6 +17,7 @@
 ~fadeVols = 0; //the volumes of all fading Patterns
 ~thresCont = 0.1; // threshold from which to continuously fade Out
 ~maxCatCounter = 400;
-~td = NetAddr("192.168.1.175", 7000);
-//~td = NetAddr("192.168.1.100", 7000);
-//~td = NetAddr("127.0.0.1", 7000);
+//~tdOut = NetAddr("192.168.1.100", 7000); // Gitsche M1
+~tdOut = NetAddr("192.168.1.175", 7000); // Gitsche Mac Book alt
+//  ~tdOut = NetAddr("192.168.178.147", 7000); // Mani
+//~tdOut = NetAddr("127.0.0.1", 7000);

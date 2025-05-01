@@ -1,7 +1,7 @@
 {
     |catName, counter|
     var c, dura, patName, status, count, case_count, local_feedbackVol, numNotes;
-    count = floor(counter * ~factor).asInteger;
+    count = floor(counter * ~factor);
     status = "";
     //"counter % factor % count %".format(counter, ~factor, count).postln;
     local_feedbackVol = 0.45;
@@ -35,7 +35,7 @@
         // bass und beat werden ausgelagert in ~setGlobal
         status = "state 02 dotted notes, increasing harmonies & release";
     }
-    {(count >= 20) && (count < 40)} {
+    {(count >= 20) && (count < 30)} {
         case_count = count - 19;
         patName = catName ++ "20";
         // rls, modInd und fratio sind gute Parameter zum spielen
@@ -45,13 +45,21 @@
         status = "state 03 notes getting longer, increasing harmonies";
     }
 
-    {(count >= 40) && (count <=60)} {
-        case_count = count - 39;
+    {(count >= 30) && (count <=45)} {
+        case_count = count - 29;
         patName = catName ++ "40";
         Pbindef(catName, *~states[catName][patName.asSymbol].asPairs).play(~t, quant:0);
         Pbindef(catName, \mRatio, case_count ).quant_(4);
         numNotes = 2;
         status = "state 04 one-notes with downward glissando";
+    }
+    {(count >= 45) && (count <=60)} {
+        case_count = count - 44;
+        patName = catName ++ "40";
+        Pbindef(catName, *~states[catName][patName.asSymbol].asPairs).play(~t, quant:0);
+        Pbindef(catName, \amp, 1- (case_count * 0.08) ).quant_(4);
+        numNotes = 2;
+        status = "state 05 slowly fade out";
     }
 
     {true} { "end of attCat reached".postln};
@@ -90,5 +98,5 @@
 
     ~addVolume.value(catName);
     defer{~status[1].string = catName ++ " : " ++ status};
-    postf("\nsetting %  to status \t % with patname % \n", catName, status, patName);
+    //postf("\nsetting %  to status \t % with patname % \n", catName, status, patName);
 };

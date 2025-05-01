@@ -27,6 +27,7 @@ patterns: (
 		timb2: -28,
 		dist: 0.5,
 		rls: 1.3,
+        lpf: 1000,
 		out: ~perc.inbus
 	),
 
@@ -37,25 +38,25 @@ patterns: (
 		sweep: 0.05,
 		shaper1: 1.0, // pumps from 1.0 on
 		shaper2: 0.9, //bright
-		rls: 0.17,
+		rls: 0.6,
 		amp: 0.35,
 		out: ~perc.inbus
 	),
 
 	snip01: (
-		instrument: 'sampSt',
-		buf: ~buffers[\hi][\snap_stereo],
+		instrument: 'sampMon',
+		buf: ~buffers[\hi][\snap_mono],
 		trigger: ~melos.melo.snap01,
 		amp: 0.4,
 		fade: 1,
-        	lp: 0,
+        lp: 0,
 		dur: ~melos.dur.snap01,
 		rate: 1,
 		atk: 0.01,
 		rls: 0.8,
 		bpf1: 1000,
 		cgain: 1.5,
-		zit: 0,
+        zit:0,
 		out: ~perc.inbus
 	),
 

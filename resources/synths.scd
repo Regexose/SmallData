@@ -186,12 +186,12 @@ SynthDef(\sampMon, {
 	env = EnvGen.kr(Env.linen(\atk.kr(0.01), \sus.kr(1), \rls.kr(1), curve: 4), doneAction: 2);
 	sig = 4.collect({
 		var lag = {ExpRand(0.0001, \lag.kr(0.0002) )};
-		PlayBuf.ar(1, \buf.kr(0), \rate.kr(1) * BufRateScale.kr(\buf.kr(0)), \trig.kr(1), \spos.kr(0) + lag, \loop.kr(0.0));
+		PlayBuf.ar(1, \buf.kr(0), \rate.kr(1) * BufRateScale.kr(\buf.kr(0)), 1, \spos.kr(0) + lag, \loop.kr(0.0));
 	}).sum;
 	sig = Compander.ar(sig, sig, \thr.kr(0.75), 1, 0.5, 0.01, 0.04, \cgain.kr(1));
 	pos = LFNoise1.kr(\zit1.kr(100)).bipolar(\zit2.kr(0.5));
-	sig = PanAz.ar(2, sig, pos, width:\w.kr(2.0));
-	//sig = Pan2.ar(sig, \pan.kr(0));
+	//sig = PanAz.ar(2, sig, pos, width:\w.kr(2.0));
+	sig = Pan2.ar(sig, \pan.kr(0));
 	sig = sig * env *  \amp.kr(0.2) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig) ;
 }).add;

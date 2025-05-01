@@ -94,28 +94,6 @@ SynthDef.new(\bass, {
 	Out.ar(\out.kr(0), sig );
 }).add;
 
-
-SynthDef(\sn1, {
-	|freq = 800, ampdecay = 0.2, out = 0|
-    var  sig, ghost, gEnv, snEnv, pEnv;
-    snEnv = EnvGen.kr(Env.perc(0.001, ampdecay), doneAction:0);
-    pEnv = EnvGen.kr(Env.perc(0.005, \pDecay.kr(3.1)), doneAction:2);
-    gEnv =  EnvGen.kr(Env.perc(\atk1.kr(0.01), \rls1.kr(0.4), 1.0, \crv1.kr(-4.0)));
-	ghost = 3.collect({
-		|n|
-		var temp, dev;
-		dev = {ExpRand(0.6, 1.5)};
-		temp = Blip.ar(\ghosts.kr(20) * dev, \numharm.kr(100)) * dev;
-
-	}).sum;
-    ghost = ghost * gEnv * \distort.kr(2).tanh;
-	sig = WhiteNoise.ar(1) * snEnv;
-	sig = RHPF.ar(sig, \ffreq.kr(1000), 0.4);
-	sig = Compander.ar(sig, sig, \thr.kr(0.35), 1, 0.3, 0.3, 0.4, \cgain.kr(1));
-	sig = [sig + ghost] * \amp.kr(0.3) * \fade.kr(1);
-   Out.ar(out, sig!2);
-}).add;
-
 //https://www.youtube.com/watch?v=xYc7_PbbtuE&t=1579s  ab 5:00
 SynthDef(\kik2, {
 	var sig;
@@ -126,6 +104,8 @@ SynthDef(\kik2, {
 	sig = (sig * \dist.kr(0).dbamp).tanh;
 	sig = sig * Env.perc(0.001, \rls.kr(1.3), curve: -8).ar(Done.freeSelf);
 	sig = sig * \amp.kr(0.3) * \fade.kr(1);
+    sig = Compander.ar(sig, sig, \thr.kr(0.65), 1, 0.3, 0.3, 0.4, \cgain.kr(1));
+    sig = LPF.ar(sig, \lpf.kr(1000));
 	sig = Pan2.ar(sig, \pan.kr(0));
 	Out.ar(\out.kr(0), sig);
 }).add;

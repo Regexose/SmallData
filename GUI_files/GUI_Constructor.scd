@@ -126,7 +126,7 @@
 };
 
 ~buildButtons = {
-    |top, posx, posy, offset, size, labels|
+    |top, posx, posy, offset, size, labels, functions|
     var buttonView, buttons;
     buttonView = CompositeView(top, Rect(posx, posy, size * 2,  size * labels.size))
     .background_(~style_1.at("bank_frame_color"));
@@ -139,7 +139,7 @@
             [labels[i] ++ "On", Color.white, Color.blue],
             [labels[i] ++ "Off", Color.white, Color.red]
         ])
-        .action_({|b| if (b.value==1, {~isPrelude=false; "prelude % %".format(b.value, ~isPrelude).postln; }, {~isPrelude=true; "prelude %  %".format(b.value, ~isPrelude).postln; })})
+        .action_({|b| functions[i].(b.value)})
     });
     buttonView.layout_(HLayout(VLayout(*buttons)))
 };

@@ -10,7 +10,7 @@
     }};
     ~lastUtterances = lastUtts;
     ~lastCategories = lastCats;
-    ~totalUtts = ~totalUtts + 1;
+    ~totalUtts = ~totalUtts + 1 ;
     if(~uttDict[cat] >= ~maxCatCounter, {~uttDict[cat] = 1}, {~uttDict[cat] = ~uttDict[cat] + (1 * ~factor)} );
     ~uttsPerMinute[cat].add(~t.beats/~t.tempo); // add a timestamp to calculate utterances per minute
     defer{var index, count;
@@ -217,6 +217,36 @@
     }).play
 };
 
+~fadeOut = {
+    ~t.schedAbs(~t.nextTimeOnGrid, {
+        if(~checkFadeVols.() >= ~thresCont, {
+            ~continuousFadeOut.value(~fadingSynths); 1},
+        {"not fading: fadeVols = %".format(~fadeVols).postln});
+    });
+};
+
+~upmManage = {
+    var lastMinute=0, elapsed=0;
+    ~t.schedAbs(~t.nextTimeOnGrid, {
+        var upm=0;
+        //"after % ".format((~t.beats/~t.tempo)).postln;
+        if ((~t.beats/~t.tempo) >= ~uttTimeWindow, {
+            lastMinute = (~t.beats/~t.tempo) - ~uttTimeWindow ;
+            //scan all timestamp lists and only keep timestamps that are larger than lastMinute
+            ~uttsPerMinute.keysValuesDo({|k,v|
+                v = v.select({|ts| ts >= lastMinute});
+                //"new opm % in %".format(v.size, k).postln;
+                ~uttsPerMinute[k] = v;
+            });
+            1;
+        });
+        ~uttsPerMinute.values.do({|l| upm = upm + l.size});
+        ~upm = upm; // update ~upm
+        //"updated upm %".format(upm).postln;
+        1;
+    });
+
+};
 
 ~mock = {
     var cat = ~categories.choose,
@@ -230,4 +260,15 @@
     //[msg, time, addr, recvPort].postln;
     ~mock.();
 },
-'/tdin');5
+'/tdin');
+
+~setPrelude = {
+    |b|
+    if (b==1, {~isPrelude=false; "prelude % %".format(b, ~isPrelude).postln; },
+        {~isPrelude=true; "prelude %  %".format(b, ~isPrelude).postln; })
+
+};
+~setTempo = {
+    |b|
+    ~t.tempo = ~bpm/60;
+}
