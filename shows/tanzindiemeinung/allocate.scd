@@ -1,7 +1,8 @@
 {
     |catName, counter|
     var c, dura, patName, status, count, case_count, local_feedbackVol, numNotes;
-    count = floor(counter * ~factor);
+    count = floor(counter * ~factor).asInteger;
+    //count = counter;
     status = "";
     //"counter % factor % count %".format(counter, ~factor, count).postln;
     local_feedbackVol = 0.45;

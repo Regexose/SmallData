@@ -2,23 +2,16 @@
 ~sim = Routine(
     { loop ( {
         ~mock.();
-        [0.76, 1, 1.5].choose.wait;
+        [0.76, 1, 2.5].choose.wait;
 		//"mocked" .postln;
         }
 ) }).play;
 )
-~t.tempo * 60
 
 
-)
-TempoClock
 ~sim.stop
 
-~upmMax = 30
-~melos[\seqRates]
-~isPrelude = false
-~isPrelude = true
-
+ Synth(\sampSt, [\buf, ~buffers[\atmos][\rain], \atk, 2.5, \rls, 12, \amp, 1 ])
 Pbindef.all.do(_.stop)
 
  ~mum.(~cat, ~uttsPerMinute[~cat], 0.25);

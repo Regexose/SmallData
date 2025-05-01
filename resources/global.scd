@@ -45,20 +45,20 @@
         ~allocate.(~categorySymbols[~cat], ~uttDict[~cat]);
 
     });
-    uttCount = ~totalUtts * ~factor;
-    "uttCount % totalUtts %".format(uttCount, ~totalUtts).postln;
+    uttCount = (~totalUtts * ~factor).ceil.asInteger;
+    //"uttCount % totalUtts %".format(uttCount, ~totalUtts).postln;
     c = case
     //wieder von vorne
-    {~uttDict.values.every({|i| i>=42})}{"all cats > 60".postln;
+    {~uttDict.values.every({|i| i>=40})}{"all cats > 40".postln;
         ~categoryTranslator.keys.do({|k| ~uttDict[k.asSymbol] = 0});
         ~totalUtts = 1;
         ~fadingSynths.do({|k| var pat= (k.asString ++ "00").asSymbol; Pbindef(k, *~states[k][pat].asPairs)});
     }
     // herunterfahren
-    {uttCount > 200}{ Synth(\sampSt, [\buf, ~buffers[\atmos][\rain], \atk, 2.5, \rls, 48, \amp, 1 ])}
-    {(uttCount > 180) && (~uttDict[~cat] >= 40)}{  [\snip, \hh01, \bass].do({|k| Pbindef(k).stop}) }
-    {(uttCount > 170) && (~uttDict[~cat] >= 37)}{  [\sn01, \kik02].do({|k| Pbindef(k).stop}) }
-     {(uttCount > 160) && (~uttDict[~cat] >= 35)}
+    {(uttCount > 200) && (uttCount < 205) }{ Synth(\sampSt, [\buf, ~buffers[\atmos][\rain], \atk, 2.5, \rls, 20, \amp, 1 ])}
+    {(uttCount > 180) && (~uttDict[~cat] >= 34)}{  [\snip01, \hh01, \bass].do({|k| Pbindef(k).stop}) }
+    {(uttCount > 170) && (~uttDict[~cat] >= 33)}{  [\sn01, \kik02].do({|k| Pbindef(k).stop}) }
+    {(uttCount > 160) && (~uttDict[~cat] >= 32)}
     {
         count = ~uttDict[~cat];
         case_count = count - 34;
@@ -122,11 +122,15 @@
 
         "setting global at 100".postln;
     }
-    {(uttCount == 100)}{Pbindef(\sn01, \freq, ~melos.melo.sn02, \dur, ~melos.dur.sn02, \shaper2, 0.8).play(~t, quant:8)}
+    {(uttCount >= 98) && (uttCount <= 103)}{
+        if ( Pbindef(\sn01).isPlaying==false, { Pbindef(\sn01, \freq, ~melos.melo.sn02, \dur, ~melos.dur.sn02, \shaper2, 0.8).play(~t, quant:8)})
+    }
     {(uttCount > 90)}{Pbindef(\snip01, \zit1, uttCount.linlin(90,100, 0, 50)).quant_(4); }
-    {(uttCount == 90)}{
-        Pbindef(\snip01).play(~t, quant:8);
+    {(uttCount >= 88) && (uttCount <= 93)}{
+    if( Pbindef(\snip01).isPlaying==false, {Pbindef(\snip01).play(~t, quant:8);
         Synth(\sampSt, [\buf,~buffers[\atmos][\dickerpott], \atk, 2.5, \rls, 40, \amp, 0.8 ]);
+    });
+
     }
     {(uttCount >= 80) && (~uttDict[~cat] >= 15)}{
 
@@ -140,9 +144,11 @@
         Pbindef(\hh01, \freq, 200, \maxFreq, 800 , \decayScale, 1, \maxRing, Pwhite(0.1, 1, inf), \fade, 0.6).quant_(4);
 
     }
-    {(uttCount == 65)}{
-        Pbindef(\kik02).play(~t, quant:4);
-        Pbindef(\hh01, \decayScale, 1, \maxRing, 0.35, \fade, 0.35 ).quant_(4); }
+    {(uttCount >= 61) && (uttCount <= 66)}{
+        if (Pbindef(\kik02).isPlaying==false, { Pbindef(\kik02).play(~t, quant:4)});
+
+        Pbindef(\hh01, \decayScale, 1, \maxRing, 0.35, \fade, 0.35 ).quant_(4);
+    }
     {(uttCount >= 56) && (~uttDict[~cat] >= 10)}{
         count = ~uttDict[~cat];
         Pbindef(\hh01, \fade, 0.25, \decayScale, 0.5, \maxRing, 0.25, \frqOff, Pwhite(0, 8, inf)).quant_(4);
@@ -165,13 +171,15 @@
             \fade, 1).quant_(8);
         Pbindef(\hh01, \freq, 900, \maxFreq, 1200, \fade, 0.25).quant_(0);
     }
-    {(uttCount == 40) }{ Pbindef(\bass, *~states[\bass].asPairs).play(~t, quant:8)}
+    {(uttCount >= 35) && (uttCount <= 39) }{
+        if (Pbindef(\bass).isPlaying==false, {Pbindef(\bass, *~states[\bass].asPairs).play(~t, quant:8)})
+    }
     {(uttCount > 20) && (~uttDict[~cat] >= 5)}{
         count = ~uttDict[~cat];
         case_count = count -4;
         Pbindef(\hh01, \decayScale, 2 + (case_count * 1.5), \maxRing, case_count/2, \accent, 2 + (0.3 * case_count)).quant_(0);
     }
-    {uttCount == 18}{Pbindef(\hh01).play(~t, quant:4)}
+    {(uttCount >= 15) && (uttCount <= 19)}{if (Pbindef(\hh01).isPlaying==false, {Pbindef(\hh01, *~states[\hh01].asPairs).play(~t, quant:4)})}
     {uttCount == 8}{
         //bird Atmosphere
 

@@ -11,14 +11,14 @@
     ~lastUtterances = lastUtts;
     ~lastCategories = lastCats;
     ~totalUtts = ~totalUtts + 1 ;
-    if(~uttDict[cat] >= ~maxCatCounter, {~uttDict[cat] = 1}, {~uttDict[cat] = ~uttDict[cat] + (1 * ~factor)} );
+    if(~uttDict[cat] >= ~maxCatCounter, {~uttDict[cat] = 1}, {~uttDict[cat] = ~uttDict[cat] + ceil(1 * ~factor).asInteger} );
     ~uttsPerMinute[cat].add(~t.beats/~t.tempo); // add a timestamp to calculate utterances per minute
     defer{var index, count;
         index = ~fadingSynths.detectIndex({|it, i| it == ~categorySymbols[cat.asSymbol]});
         count =  ~uttDict[~cat];
         //postf("\nupdating index % to count % ", index, count);
         ~mcLabels[1][index].string = cat ++ "\n" ++ floor(count).asInteger.asString;
-        ~mcLabels[1][5].string = "total utts" ++ "\n" ++ ~totalUtts ;
+        ~mcLabels[1][5].string = "total utts \n"  ++ ~totalUtts ++"\n uttCount: \n" ++ (~totalUtts * ~factor).ceil.asInteger.asString ;
     }
 };
 

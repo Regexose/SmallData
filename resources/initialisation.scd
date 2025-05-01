@@ -20,7 +20,7 @@
 	'insinuation': 'unterstellung',
 );
 
-~t = TempoClock(~tempo, queueSize: 1024).permanent_(true);
+~t = TempoClock(~bpm/60, queueSize: 1024).permanent_(true);
 ~mixClear = {  MixerChannel.freeAll};
 
 ~lastUtterances = Array.with("one", "two", "three");
