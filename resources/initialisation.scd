@@ -138,7 +138,7 @@ PathName(~midiFolder).entries.do({
 		// Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
 		~master = MixerChannel(\master, s, 2, 2);
 		~ch1 = MixerChannel(\ch1, s, 2, 2, outbus: ~master);
-		~ch2 = MixerChannel(\ch2, s, 2, 2, outbus: ~master);
+		~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:~master);
 		~ch3 = MixerChannel(\ch3, s, 2, 2, outbus: ~master);
 		~ch4 = MixerChannel(\ch4, s, 2, 2, outbus: ~master);
 		~ch5 = MixerChannel(\ch5, s, 2, 2, outbus: ~master);

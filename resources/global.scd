@@ -73,7 +73,7 @@
         case_count = count -29;
         Pbindef(\bass, \dur,  ~melos.dur.bass25 , \modRate, 1.5, \amp, 0.45,
             \midinote,  ~melos.melo.bass33,
-            \rls, 1.5, \fmratio, 3, \slide1, 0.6, \distort, 1.5, \oscFB, pi/3, \cgain, 1.5).quant_(8);
+            \rls, 1.5, \fmratio, 3, \slide1, 0.6, \distort, 1.5, \oscFB, pi/4, \cgain, 1.5).quant_(8);
        Pbindef(\kik02, \timb1, -4, \amp, 0.5,
             \freq, Pif((count%3==0), ~melos.melo.kick07,~melos.melo.kick02),
             \dur, Pif((count%3==0), ~melos.dur.kick07,~melos.dur.kick02),

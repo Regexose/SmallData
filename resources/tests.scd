@@ -2,7 +2,7 @@
 ~sim = Routine(
     { loop ( {
         ~mock.();
-        [0.76, 1, 2.5].choose.wait;
+        [3.76, 3.5].choose.wait;
 		//"mocked" .postln;
         }
 ) }).play;
@@ -10,6 +10,7 @@
 
 
 ~sim.stop
+s.makeWindow
 
  Synth(\sampSt, [\buf, ~buffers[\atmos][\rain], \atk, 2.5, \rls, 12, \amp, 1 ])
 Pbindef.all.do(_.stop)

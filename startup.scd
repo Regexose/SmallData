@@ -116,7 +116,7 @@ s.waitForBoot({
         \interpreter,
         { arg msg;
             ~cat = msg[2];
-
+             ~tdOut.sendMsg("/tdIn", msg[1], msg[2]);
             if (~isPrelude == true) {
                 "prelude".postln;
                 ~feedBackSounds.(~categorySymbols[~cat]);
@@ -125,7 +125,7 @@ s.waitForBoot({
                 ~blinkSelector.();
                 if(msg[3] != nil, {~addNewSample.(msg[3])});
                 ~setGlobal.();
-                ~tdOut.sendMsg("/tdIn", msg[1], msg[2]);
+
                 //"no prelude".postln;
                 //"debug OSC: cat %".format(msg[2]).postln;
             }
