@@ -5,7 +5,7 @@
 ~configFile.load;
 ~resourcePath = ~projectRoot ++ "resources/";
 
-Server.default.options.numInputBusChannels_(0);
+Server.default.options.numInputBusChannels_(1);
 Server.default.options.numOutputBusChannels_(4);
 Server.default.options.outDevice_(~audioInterface);
 //Server.default.options.inDevice_(~audioInterface);
@@ -22,9 +22,12 @@ s.waitForBoot({
     ~midiOut = MIDIOut.new(0);
     ~midiIn = MIDIIn.new(0);
     ~vbapIn = Bus.audio(s, 1);
+    ~vbapOut = Bus.audio(s, 1);
     //~vbapOut = Bus.audio(s, 4);
-    ~speaker = VBAPSpeakerArray.new(2, [-30, 30, -110, 110]); // 4 channel ring
+    ~speaker = VBAPSpeakerArray.new(2, [-30, 30, 110, -110]); // 4 channel ring
+   // ~speaker = VBAPSpeakerArray.new(3, [-30, 30, -110, 110]); // 9 channel ring
     ~panbuf = ~speaker.loadToBuffer;
+    ~panBus = Bus.control(s,1);
 
 
     /// load SynthDefs, Constants, Functions

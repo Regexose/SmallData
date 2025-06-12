@@ -150,14 +150,33 @@ SynthDef(\tgrainsMBS, {
     {cat == \ins}{idx = 4; dur = 7.2; freqs = [554, 698, 830, 987, 1108]; punches = [0.11, 0.1, 0.03, 0.02, 0.101]}
     {true}{"endOfCat".postln};
 
-    Synth(\VBAP4chan, [\freq, Array.fill(4, {exprand(freqs[idx], freqs[idx] * 2)}),
+    /*    Synth(\VBAP4chan, [\freq, Array.fill(4, {exprand(freqs[idx], freqs[idx] * 2)}),
+    \ring, [0.2, 0.1, 0.5, 0.1] * dur ,
+    \level, rrand(0.1, 0.5) !4,
+    // \azi, rrand(pans[idx], pans[idx+1]), \level, 0.5,
+    \vbapBuf, ~panBuf,
+    \azi, ~panBus, \level, 0.5,
+    \dec, dur/3, \trg, dur + idx,
+    \rls, dur, \punch, punches[idx], \amp, 0.4,
+    \decayScale, 2 - (idx* rrand(0.01, 0.15)), \freqScale, pans[idx],
+    \ffreq, rrand(freqs[3], freqs[4]), \rq, 0.2])*/
+
+    Pbindef(\vbapklank,
+        \instrument, \VBAP4chan,
+        \freq, Pwhite(freqs[idx], freqs[idx] * 2, inf),
         \ring, [0.2, 0.1, 0.5, 0.1] * dur ,
-        \level, rrand(0.1, 0.5) !4,
-        \azi, rrand(pans[idx], pans[idx+1]), \level, 0.5,
+        \level, Pfunc({rrand(0.1, 0.5) }!4),
+        \dur, dur,
+        // \azi, rrand(pans[idx], pans[idx+1]), \level, 0.5,
+        \vbapBuf, ~panbuf,
+        \azi, Pfunc({~mbsdata.panbus}),
         \dec, dur/3, \trg, dur + idx,
-        \rls, dur, \punch, punches[idx], \amp, 0.4,
+        \rls, dur, \punch, punches[idx], \amp, 0.2,
         \decayScale, 2 - (idx* rrand(0.01, 0.15)), \freqScale, pans[idx],
-        \ffreq, rrand(freqs[3], freqs[4]), \rq, 0.2])
+        \ffreq, Pfunc({rrand(freqs[3], freqs[4])}), \rq, 0.2
+    ).play;
+
+
 
 };
 
@@ -220,118 +239,124 @@ x.free;*/
         })
     }
 });
-/*
-// circle Ramp
-(
-var speakerList, x=200, y=150, targx=200, targy=150;
-var atorad = (2pi) / 360, rtoang = 360.0 / (2pi);
-var targRotate, actRotate, targPoint, actPoint;
-var maxShiftPerFrame = 20, frameInterval = 0.01;
-var resched = false, count = 0;
-var panBus, widthBus, recButton;
-var panWidth = 30;
-var a, b, c, e;
-var sig;
 
-maxShiftPerFrame = maxShiftPerFrame * atorad;
-actPoint = Point(x, y) - Point(200, 200);
-panBus = Bus.control;
-widthBus = Bus.control.set(60);
+~circleRamp = {
+    var speakerList, x=200, y=150, targx=200, targy=150;
+    var atorad = (2pi) / 360, rtoang = 360.0 / (2pi);
+    var targRotate, actRotate, targPoint, actPoint;
+    var maxShiftPerFrame = 20, frameInterval = 0.01;
+    var resched = false, count = 0;
+    var panBus, widthBus, recButton;
+    var panWidth = 25;
+    var a, b, c, e;
+    var sig;
 
-w = Window.new("Quadro Panner", Rect(128, 64, 400, 450)).front;
-w.view.background_(Color.grey(0.3));
-w.view.decorator = FlowLayout(w.view.bounds);
+    maxShiftPerFrame = maxShiftPerFrame * atorad;
+    actPoint = Point(x, y) - Point(200, 200);
+    panBus = Bus.control;
+    widthBus = Bus.control.set(60);
 
-speakerList = [[-30, "L"], [30, "R"], [-110, "Ls"], [110, "Rs"]];
+    w = Window.new("Quadro Panner", Rect(128, 64, 400, 450)).front;
+    w.view.background_(Color.grey(0.3));
+    w.view.decorator = FlowLayout(w.view.bounds);
 
-e = EZSlider.new(w, Rect(380, 20), "Stereo Width", [0, 180].asSpec, {arg ez; widthBus.set(ez.value); w.refresh}, panWidth);
-//e.labelView.setProperty(\stringColor,Color.grey(0.8));
+    speakerList = [[-30, "L"], [30, "R"], [110, "Rs"], [-110, "Ls"]];
 
-c = UserView.new(w, Rect(0, 0, 400, 380));
-c.canFocus = false;
+    // Der Panningbereich (Das ""Tortenstück"")
+    e = EZSlider.new(w, Rect(380, 20), "Stereo Width", [0, 180].asSpec, {arg ez; widthBus.set(ez.value);  w.refresh}, panWidth);
+    //e.labelView.setProperty(\stringColor,Color.grey(0.8));
 
-c.drawFunc = {
-    Color.grey(0.8).set;
-    // draw the speaker layout
-    Pen.translate(200,200);
-    ((actPoint.theta + (0.5pi)).wrap2(pi) * rtoang).round(0.01).asString.drawCenteredIn(Rect.aboutPoint(0@170, 30, 10), GUI.font.new("Arial", 10), Color.grey(0.8));
-    Pen.strokeOval(Rect.aboutPoint(0@0, 150, 150));
-    Pen.rotate(pi);
-    speakerList.do({|spkr|
-        Pen.use({
-            Pen.rotate(spkr[0] * atorad);
-            Pen.moveTo(0@170);
-            Pen.strokeRect(r = Rect.aboutPoint(0@170, 30, 10));
-            if(spkr[0].abs < 90, {
-                Pen.use({
-                    Pen.translate(0, 170);
-                    Pen.rotate(pi);
-                    spkr[1].drawCenteredIn(Rect.aboutPoint(0@0, 30, 10),
-                        GUI.font.new("Arial", 10), Color.grey(0.8));
+    c = UserView.new(w, Rect(0, 0, 400, 380));
+    c.canFocus = false;
+
+    c.drawFunc = {
+        Color.grey(0.8).set;
+        // draw the speaker layout
+        Pen.translate(200,200);
+        // Anzeige des Winkels
+        ((actPoint.theta + (0.5pi)).wrap2(pi) * rtoang).round(0.01).asString.drawCenteredIn(Rect.aboutPoint(0@170, 30, 10), GUI.font.new("Arial", 10), Color.grey(0.8));
+
+        Pen.strokeOval(Rect.aboutPoint(0@0, 150, 150));
+        Pen.rotate(pi); // dreht die ganze Zeichnung um 180 °
+
+        // malt die speaker boxes ..?
+        speakerList.do({|spkr|
+            Pen.use({
+                Pen.rotate(spkr[0] * atorad);
+                Pen.moveTo(0@170);
+                Pen.strokeRect(r = Rect.aboutPoint(0@170, 30, 10));
+                if(spkr[0].abs < 90, {
+                    Pen.use({
+                        Pen.translate(0, 170);
+                        Pen.rotate(pi);
+                        spkr[1].drawCenteredIn(Rect.aboutPoint(0@0, 30, 10),
+                            GUI.font.new("Arial", 10), Color.grey(0.8));
+                    });
+                },{
+                    spkr[1].drawCenteredIn(r, GUI.font.new("Arial", 10), Color.grey(0.8));
                 });
-            },{
-                spkr[1].drawCenteredIn(r, GUI.font.new("Arial", 10), Color.grey(0.8));
             });
         });
-    });
 
-    Pen.moveTo(0@0);
+        Pen.moveTo(0@0);
 
-    // draw the pan point
-    Pen.rotate(actPoint.theta + 0.5pi);
-    targPoint = Point(x, y) - Point(200, 200);
-    // trunc to avoid loops due to fp math
-    targRotate = (targPoint.theta - actPoint.theta).trunc(1e-15);
-    // wrap around
-    if (targRotate.abs > pi, {targRotate = (2pi - targRotate.abs) * targRotate.sign.neg});
-    actRotate = targRotate.clip2(maxShiftPerFrame).trunc(1e-15);
-    actPoint = actPoint.rotate(actRotate);
-    Pen.rotate(actRotate);
-    Pen.lineTo(0@150);
-    Pen.stroke;
-    Pen.fillOval(Rect.aboutPoint(0@150, 7, 7));
-    Pen.addWedge(0@0, 140, neg(e.value * 0.5) * atorad + 0.5pi, e.value * atorad);
-    Pen.stroke;
-    Color.grey(0.8).alpha_(0.1).set;
-    Pen.addWedge(0@0, 140, neg(e.value * 0.5) * atorad + 0.5pi, e.value * atorad);
-    Pen.fill;
+        // draw the pan point
+        Pen.rotate(actPoint.theta + 0.5pi);
+        targPoint = Point(x, y) - Point(200, 200);
+        // trunc to avoid loops due to fp math
+        targRotate = (targPoint.theta - actPoint.theta).trunc(1e-15);
+        // wrap around
+        if (targRotate.abs > pi, {targRotate = (2pi - targRotate.abs) * targRotate.sign.neg});
+        actRotate = targRotate.clip2(maxShiftPerFrame).trunc(1e-15);
+        actPoint = actPoint.rotate(actRotate);
 
-    if((actRotate.abs > 0), {AppClock.sched(frameInterval, {w.refresh})}, {count = 0;});
-    if(count%4 == 0, {panBus.set((actPoint.theta + (0.5pi)).wrap2(pi) * rtoang)});
-};
+        Pen.rotate(actRotate);
+        Pen.lineTo(0@150);
+        Pen.stroke;
+        Pen.fillOval(Rect.aboutPoint(0@150, 7, 7));
+        Pen.addWedge(0@0, 140, neg(e.value * 0.5) * atorad + 0.5pi, e.value * atorad);
+        Pen.stroke;
+        Color.grey(0.8).alpha_(0.1).set;
+        Pen.addWedge(0@0, 140, neg(e.value * 0.5) * atorad + 0.5pi, e.value * atorad);
+        Pen.fill;
 
-c.mouseMoveAction_({|v,inx,iny| x = inx; y = iny; w.refresh;});
-c.mouseDownAction_({|v,inx,iny| x = inx; y = iny; w.refresh;});
+        if((actRotate.abs > 0), {AppClock.sched(frameInterval, {w.refresh})}, {count = 0;});
+        // hier wird der panbus, also der azimuth Wert generiert
+        if(count%4 == 0, {~mbsdata.panbus = ((actPoint.theta + (0.5pi)).wrap2(pi) * rtoang)});
+    };
 
-
-w.refresh;
-
-// VBAP
-
-a = VBAPSpeakerArray.new(2, speakerList.collect(_.first));
-b = Buffer.loadCollection(s, a.getSetsAndMatrices;);
+    c.mouseMoveAction_({|v,inx,iny| x = inx; y = iny; w.refresh;});
+    c.mouseDownAction_({|v,inx,iny| x = inx; y = iny; w.refresh;});
 
 
-SynthDef(\sine, {
+    w.refresh;
+
+    // VBAP
+
+
+
+    /*SynthDef(\sine, {
     var mem;
     mem = SinOsc.ar([440, 660], 0, Decay2.ar(Impulse.ar([1, 0.9]), 0.1, 0.2));
-    Out.ar(\out.kr(~vbapIn), mem);
-}).add;
+    Out.ar(\out.kr(0), mem);
+    }).add;
 
-sig = Synth(\sine, [\out,  ~vbapIn]);
+    //sig = Synth(\sine, [\out,  0]);
+    //sig.free;
+    a = VBAPSpeakerArray.new(2, speakerList.collect(_.first));
+    b = Buffer.loadCollection(s, a.getSetsAndMatrices);
+    sig = Synth(\rec, [\in, 4,  \out, ~vbapOut ]);
+    SynthDef('VBAP 4 chan', { |inbus, azi = 0, ele = 0, spr = 0, panWidth, vbapBuf|
+        var panned, source;
+        source = SinOsc.ar([440, 660], 0, Decay2.ar(Impulse.ar([1, 0.9]), 0.1, 0.2));
+        //source = In.ar(inbus);
+        azi = azi.circleRamp;
+        panned = VBAP.ar(4, source, vbapBuf, [azi - (0.5 * panWidth), azi + (0.5 * panWidth)], ele, spr);
+        // 'standard' channel order for 5.1
+        [0, 1, 2, 3].do({arg bus, i; Out.ar(bus, panned[0][i])});
+        [0, 1, 2, 3].do({arg bus, i; Out.ar(bus, panned[1][i])});
 
-SynthDef('VBAP 4 chan', { |azi = 0, ele = 0, spr = 0, panWidth, vbapBuf|
-var panned, source;
-//source = SinOsc.ar([440, 660], 0, Decay2.ar(Impulse.ar([1, 0.9]), 0.1, 0.2));
-    source = In.ar(~vbapIn);
-azi = azi.circleRamp;
-panned = VBAP.ar(4, source, vbapBuf, [azi - (0.5 * panWidth), azi + (0.5 * panWidth)], ele, spr);
-// 'standard' channel order for 5.1
-[0, 1, 2, 3].do({arg bus, i; Out.ar(bus, panned[0][i])});
-[0, 1, 2, 3].do({arg bus, i; Out.ar(bus, panned[1][i])});
+    }).play(s, [inbus: ~vbapOut, vbapBuf: b.bufnum, azi: panBus.asMap, width: widthBus.asMap]);
+    */
+};
 
-}).play(s, [vbapBuf: b.bufnum, azi: panBus.asMap, width: widthBus.asMap]);
-
-)
-
-*/

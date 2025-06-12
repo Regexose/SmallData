@@ -1,6 +1,7 @@
 ~fx1Bus = Bus.audio(s,2);
 ~fx2Bus = Bus.audio(s,2);
 ~fx3Bus = Bus.audio(s,2);
+~mbsdata = ();
 ~numSlots = 16;
 ~cat = "lecture";
 ~storyIndex = 0;

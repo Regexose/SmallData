@@ -322,7 +322,7 @@ SynthDef(\hitSt, {
 SynthDef(\rec, {
     var sig;
     sig = In.ar(\in.kr(2));
-    Out.ar(0, sig!2 * \amp.kr(0.5));
+    Out.ar(\out.kr(0), sig * \amp.kr(0.5));
 }).add;
 
 //vector based panning
